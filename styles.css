@@ -406,3 +406,26 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .hover\:bg-opacity-80:hover {
     --tw-bg-opacity: 0.8;
 }
+
+/* Styles pour le drag & drop */
+.cursor-move {
+    cursor: move;
+}
+
+.dragging {
+    cursor: grabbing !important;
+}
+
+/* Animation de transition pour le déplacement */
+#objectifs-list > div {
+    transition: transform 0.2s ease;
+}
+
+#objectifs-list > div:hover {
+    transform: translateX(4px);
+}
+
+#objectifs-list > div.dragging {
+    transform: scale(1.02);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
