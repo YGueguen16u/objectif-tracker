@@ -1,0 +1,12 @@
+{
+  "name": "objectif-tracker",
+  "version": "1.0.0",
+  "description": "Système de suivi d'objectifs",
+  "scripts": {
+    "build": "tailwindcss -i ./input.css -o ./output.css",
+    "watch": "tailwindcss -i ./input.css -o ./output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}

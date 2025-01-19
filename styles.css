@@ -1,0 +1,309 @@
+/* Styles généraux */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f9fafb;
+}
+
+/* Styles des boutons */
+.btn-primary {
+    background-color: #4f46e5;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #4338ca;
+}
+
+.btn-secondary {
+    background-color: #f3f4f6;
+    color: #374151;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+
+/* Styles du modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Styles du calendrier */
+#calendar-container {
+    position: relative;
+    display: inline-block;
+}
+
+#calendar {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 50;
+    width: 300px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+#calendar.hidden {
+    display: none;
+}
+
+#calendar:not(.hidden) {
+    display: block;
+}
+
+#calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.calendar-day {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.calendar-day:hover {
+    background-color: #f3f4f6;
+}
+
+.calendar-day.today {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    font-weight: 600;
+}
+
+.calendar-day.selected {
+    background-color: #4f46e5;
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.text-gray-400 {
+    color: #9ca3af;
+}
+
+#calendar-trigger {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#calendar-trigger:hover {
+    border-color: #4f46e5;
+}
+
+#current-month-year {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #111827;
+    margin: 0 0.5rem;
+}
+
+#prev-month, #next-month {
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    border: none;
+}
+
+#prev-month:hover, #next-month:hover {
+    background-color: #f3f4f6;
+}
+
+/* Styles des objectifs */
+.objectif-item {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    border-left: 4px solid #4f46e5;
+}
+
+.objectif-item:hover {
+    transform: translateY(-2px);
+}
+
+.objectif-item.completed {
+    border-left-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+.objectif-archive-item {
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.objectif-archive-item:hover {
+    background-color: #f3f4f6;
+}
+
+.objectif-archive-item.selected {
+    background-color: #e0e7ff;
+    border-color: #4f46e5;
+}
+
+/* Styles des tags */
+.tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #e0e7ff;
+    color: #4f46e5;
+}
+
+.tag.personnel { background-color: #e0e7ff; color: #4f46e5; }
+.tag.professionnel { background-color: #fef3c7; color: #d97706; }
+.tag.sante { background-color: #dcfce7; color: #15803d; }
+.tag.autre { background-color: #fce7f3; color: #db2777; }
+
+/* Styles des checkbox */
+.checkbox-custom {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #4f46e5;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.checkbox-custom:checked {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+/* Styles du graphique */
+.chart-container {
+    position: relative;
+    margin: auto;
+    height: 300px;
+    width: 100%;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #4f46e5;
+    transition: width 0.3s ease-in-out;
+}
+
+/* Styles de la barre de progression */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    background: #e5e7eb;
+    outline: none;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #4338ca;
+    transform: scale(1.1);
+}
+
+/* Styles des badges de catégorie */
+.category-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.category-badge.personnel {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.category-badge.professionnel {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.category-badge.sante {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.category-badge.autre {
+    background-color: #f3f4f6;
+    color: #374151;
+}

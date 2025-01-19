@@ -1,0 +1,34 @@
+{
+    "objectifs": [
+        {
+            "id": "obj_1737242072180",
+            "titre": "22 pages of AWS",
+            "categorie": "personnel",
+            "date_creation": "2025-01-18T23:14:32.180Z"
+        },
+        {
+            "id": "obj_1737242210542",
+            "titre": "3 pages of Piketty's Le Capital au XXIé siècle",
+            "categorie": "personnel",
+            "date_creation": "2025-01-18T23:16:50.542Z"
+        },
+        {
+            "id": "obj_1737242246943",
+            "titre": "2 pages of the Personal MBA",
+            "categorie": "personnel",
+            "date_creation": "2025-01-18T23:17:26.943Z"
+        },
+        {
+            "id": "obj_1737242759682",
+            "titre": "Wake up 10:00 A.M.",
+            "categorie": "personnel",
+            "date_creation": "2025-01-18T23:25:59.682Z"
+        },
+        {
+            "id": "obj_1737245357723",
+            "titre": "Bed before 12:00 A.M.",
+            "categorie": "personnel",
+            "date_creation": "2025-01-19T00:11:21.000Z"
+        }
+    ]
+}

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique des Objectifs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-indigo-600">Historique des Objectifs</h1>
+            <a href="index.html" class="text-indigo-600 hover:text-indigo-700 font-medium">
+                Retour aux objectifs de la semaine
+            </a>
+        </div>
+
+        <!-- Section des filtres -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="flex flex-wrap gap-4">
+                <div class="flex-1 min-w-[200px]">
+                    <label for="filtre-categorie" class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+                    <select id="filtre-categorie" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">Toutes les catégories</option>
+                        <option value="personnel">Personnel</option>
+                        <option value="professionnel">Professionnel</option>
+                        <option value="sante">Santé</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                    <label for="filtre-date" class="block text-sm font-medium text-gray-700 mb-1">Date de création</label>
+                    <select id="filtre-date" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">Toutes les dates</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="week">Cette semaine</option>
+                        <option value="month">Ce mois</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                    <label for="filtre-recherche" class="block text-sm font-medium text-gray-700 mb-1">Rechercher</label>
+                    <input type="text" id="filtre-recherche" 
+                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                           placeholder="Rechercher un objectif...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau des objectifs -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Titre
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Catégorie
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date de création
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="objectifs-list" class="bg-white divide-y divide-gray-200">
+                        <!-- Les objectifs seront injectés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let objectifsMaster = [];
+
+        // Fonction pour charger les objectifs
+        async function chargerObjectifs() {
+            try {
+                const response = await fetch('http://localhost:8080/load?file=objectifs_master.json');
+                const data = await response.json();
+                objectifsMaster = data.objectifs || [];
+                afficherObjectifs();
+            } catch (error) {
+                console.error('Erreur lors du chargement des objectifs:', error);
+            }
+        }
+
+        // Fonction pour formater la date et l'heure
+        function formatDateHeure(dateStr) {
+            const date = new Date(dateStr);
+            return new Intl.DateTimeFormat('fr-FR', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        }
+
+        // Fonction pour obtenir la couleur en fonction de la catégorie
+        function getCategoryColor(categorie) {
+            switch (categorie) {
+                case 'personnel':
+                    return 'blue';
+                case 'professionnel':
+                    return 'green';
+                case 'sante':
+                    return 'red';
+                default:
+                    return 'gray';
+            }
+        }
+
+        // Fonction pour afficher les objectifs
+        function afficherObjectifs() {
+            const objectifsList = document.getElementById('objectifs-list');
+            if (!objectifsList) return;
+
+            // Récupérer les valeurs des filtres
+            const filtreCategorie = document.getElementById('filtre-categorie')?.value || '';
+            const filtreDate = document.getElementById('filtre-date')?.value || '';
+            const filtreRecherche = document.getElementById('filtre-recherche')?.value.toLowerCase() || '';
+
+            // Trier les objectifs par date de création (plus récent en premier)
+            const objectifsTries = [...objectifsMaster].sort((a, b) => {
+                return new Date(b.date_creation) - new Date(a.date_creation);
+            });
+
+            // Filtrer les objectifs
+            const objectifsFiltres = objectifsTries.filter(objectif => {
+                // Filtre par catégorie
+                if (filtreCategorie && objectif.categorie !== filtreCategorie) {
+                    return false;
+                }
+
+                // Filtre par date
+                if (filtreDate) {
+                    const dateCreation = new Date(objectif.date_creation);
+                    const maintenant = new Date();
+                    const debutJour = new Date(maintenant.setHours(0, 0, 0, 0));
+
+                    switch (filtreDate) {
+                        case 'today':
+                            if (dateCreation < debutJour) return false;
+                            break;
+                        case 'week':
+                            const debutSemaine = new Date(maintenant);
+                            debutSemaine.setDate(maintenant.getDate() - maintenant.getDay() + 1);
+                            debutSemaine.setHours(0, 0, 0, 0);
+                            if (dateCreation < debutSemaine) return false;
+                            break;
+                        case 'month':
+                            const debutMois = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+                            if (dateCreation < debutMois) return false;
+                            break;
+                    }
+                }
+
+                // Filtre par recherche
+                if (filtreRecherche && !objectif.titre.toLowerCase().includes(filtreRecherche)) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Vider la liste
+            objectifsList.innerHTML = '';
+
+            // Afficher les objectifs filtrés
+            objectifsFiltres.forEach(objectif => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${objectif.titre}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getCategoryColor(objectif.categorie)}-100 text-${getCategoryColor(objectif.categorie)}-800">
+                            ${objectif.categorie}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${formatDateHeure(objectif.date_creation)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div class="flex space-x-3">
+                            <button onclick="ajouterALaSemaine('${objectif.id}')" 
+                                    class="text-indigo-600 hover:text-indigo-900">
+                                Ajouter à la semaine
+                            </button>
+                            <button onclick="supprimerObjectif('${objectif.id}')"
+                                    class="text-red-600 hover:text-red-900">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                objectifsList.appendChild(tr);
+            });
+        }
+
+        // Fonction pour ajouter un objectif à la semaine actuelle
+        async function ajouterALaSemaine(objectifId) {
+            try {
+                // 1. Charger les données de la semaine
+                const responseSemaines = await fetch('http://localhost:8080/load?file=semaines.json');
+                const dataSemaines = await responseSemaines.json();
+                
+                // 2. Trouver l'objectif dans objectifs_master
+                const objectif = objectifsMaster.find(obj => obj.id === objectifId);
+                if (!objectif) {
+                    throw new Error('Objectif non trouvé');
+                }
+
+                // 3. Ajouter l'objectif à chaque jour de la semaine avec un progrès de 0
+                const progressionQuotidienne = dataSemaines.progressionQuotidienne || {};
+                Object.keys(progressionQuotidienne).forEach(date => {
+                    progressionQuotidienne[date][objectifId] = 0;
+                });
+
+                // 4. Sauvegarder les changements
+                await fetch('http://localhost:8080/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        file: 'semaines.json',
+                        data: {
+                            debut: dataSemaines.debut,
+                            fin: dataSemaines.fin,
+                            progressionQuotidienne: progressionQuotidienne
+                        }
+                    })
+                });
+
+                alert('Objectif ajouté à la semaine avec succès !');
+                window.location.href = 'index.html';
+                
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout à la semaine:', error);
+                alert('Une erreur est survenue lors de l\'ajout de l\'objectif à la semaine');
+            }
+        }
+
+        // Fonction pour supprimer un objectif
+        async function supprimerObjectif(objectifId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?')) {
+                return;
+            }
+
+            try {
+                // Trouver l'index de l'objectif à supprimer
+                const index = objectifsMaster.findIndex(obj => obj.id === objectifId);
+                if (index === -1) return;
+
+                // Supprimer l'objectif du tableau
+                objectifsMaster.splice(index, 1);
+
+                // Sauvegarder les changements
+                const response = await fetch('http://localhost:8080/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        file: 'objectifs_master.json',
+                        data: { objectifs: objectifsMaster }
+                    })
+                });
+
+                if (response.ok) {
+                    // Rafraîchir l'affichage
+                    afficherObjectifs();
+                } else {
+                    throw new Error('Erreur lors de la sauvegarde');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression:', error);
+                alert('Une erreur est survenue lors de la suppression de l\'objectif');
+            }
+        }
+
+        // Fonction pour initialiser les filtres
+        function initFiltres() {
+            const filtreCategorie = document.getElementById('filtre-categorie');
+            const filtreDate = document.getElementById('filtre-date');
+            const filtreRecherche = document.getElementById('filtre-recherche');
+
+            if (filtreCategorie) {
+                filtreCategorie.addEventListener('change', afficherObjectifs);
+            }
+
+            if (filtreDate) {
+                filtreDate.addEventListener('change', afficherObjectifs);
+            }
+
+            if (filtreRecherche) {
+                filtreRecherche.addEventListener('input', afficherObjectifs);
+            }
+        }
+
+        // Initialisation au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            chargerObjectifs();
+            initFiltres();
+        });
+    </script>
+</body>
+</html>

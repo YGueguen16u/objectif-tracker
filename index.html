@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi d'Objectifs Hebdomadaires</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-indigo-600">Objectifs de la Semaine</h1>
+            <div class="flex gap-4">
+                <button id="save-button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-all duration-200">
+                    Sauvegarder
+                </button>
+                <a href="historique.html" class="text-indigo-600 hover:text-indigo-700 font-medium flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Voir tous les objectifs
+                </a>
+            </div>
+        </div>
+        
+        <!-- Graphique de progression -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Progression Quotidienne</h2>
+            <canvas id="progressionChart" class="w-full" height="200"></canvas>
+        </div>
+
+        <!-- En-tête avec la semaine actuelle -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="semaine-actuelle" class="text-xl font-semibold">Semaine du ...</h2>
+                <div class="flex space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div id="calendar-container" class="relative">
+                            <button type="button" id="calendar-trigger" class="flex items-center space-x-2 px-4 py-2 border rounded-lg hover:border-indigo-500">
+                                <span id="selected-date">Sélectionner une date</span>
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                            
+                            <div id="calendar" class="hidden absolute z-50 mt-2 bg-white rounded-lg shadow-lg p-4 min-w-[300px]">
+                                <div class="flex justify-between items-center mb-4">
+                                    <button id="prev-month" class="p-2 hover:bg-gray-100 rounded-full">&lt;</button>
+                                    <span id="current-month-year" class="text-lg font-semibold"></span>
+                                    <button id="next-month" class="p-2 hover:bg-gray-100 rounded-full">&gt;</button>
+                                </div>
+                                
+                                <div class="grid grid-cols-7 gap-1 text-center text-sm mb-2">
+                                    <div class="font-medium">Lu</div>
+                                    <div class="font-medium">Ma</div>
+                                    <div class="font-medium">Me</div>
+                                    <div class="font-medium">Je</div>
+                                    <div class="font-medium">Ve</div>
+                                    <div class="font-medium">Sa</div>
+                                    <div class="font-medium">Di</div>
+                                </div>
+                                
+                                <div id="calendar-days" class="grid grid-cols-7 gap-1">
+                                    <!-- Les jours seront ajoutés ici par JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="sauvegarderProgresJournalier()" class="btn-secondary">
+                        Sauvegarder le progrès
+                    </button>
+                    <button onclick="afficherModalNouvelleSemaine()" class="btn-primary">
+                        Nouvelle Semaine
+                    </button>
+                </div>
+            </div>
+            <!-- Résumé du jour -->
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div class="flex justify-between items-center">
+                    <span class="font-medium">Progrès du jour sélectionné:</span>
+                    <span id="progres-jour" class="text-2xl font-bold text-indigo-600">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire d'ajout d'objectif -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <form id="objectif-form" class="space-y-4">
+                <div>
+                    <label for="objectif" class="block text-sm font-medium text-gray-700">Nouvel Objectif</label>
+                    <input type="text" id="objectif" name="objectif" required
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label for="categorie" class="block text-sm font-medium text-gray-700">Catégorie</label>
+                        <select id="categorie" name="categorie" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="personnel">Personnel</option>
+                            <option value="professionnel">Professionnel</option>
+                            <option value="sante">Santé</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" 
+                        class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">
+                    Ajouter l'objectif
+                </button>
+            </form>
+        </div>
+
+        <!-- Liste des objectifs -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div id="objectifs-list" class="space-y-4">
+                <!-- Les objectifs seront ajoutés ici dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour nouvelle semaine -->
+    <div id="nouvelle-semaine-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Nouvelle Semaine</h2>
+            <p class="mb-4">Voulez-vous créer un nouveau tableau d'objectifs pour cette semaine ?</p>
+            <div class="flex justify-end space-x-4">
+                <button onclick="creerNouvelleSemaine(false)" class="btn-secondary">
+                    Créer un tableau vide
+                </button>
+                <button onclick="creerNouvelleSemaine(true)" class="btn-primary">
+                    Réutiliser des objectifs précédents
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour sélection d'objectifs précédents -->
+    <div id="objectifs-precedents-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Sélectionner des objectifs précédents</h2>
+            <div id="objectifs-precedents-list" class="space-y-2 max-h-96 overflow-y-auto">
+                <!-- Liste des objectifs précédents générée dynamiquement -->
+            </div>
+            <div class="flex justify-end space-x-4 mt-4">
+                <button onclick="fermerModal('objectifs-precedents-modal')" class="btn-secondary">
+                    Annuler
+                </button>
+                <button onclick="importerObjectifsSelectionnes()" class="btn-primary">
+                    Importer la sélection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js" defer></script>
+</body>
+</html>
