@@ -104,15 +104,46 @@ function updateProgressionChart() {
                 label: 'Progression quotidienne',
                 data: progres,
                 borderColor: 'rgb(99, 102, 241)',
-                tension: 0.1
+                backgroundColor: 'rgb(99, 102, 241)',
+                tension: 0,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: 'rgb(99, 102, 241)',
+                pointBorderColor: 'white',
+                pointBorderWidth: 2
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100
+                    max: 100,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
                 }
             }
         }
@@ -157,50 +188,62 @@ async function afficherObjectifs() {
         const objectif = objectifsMaster.find(obj => obj.id === objectifId);
         if (!objectif) return;
 
-        const li = document.createElement('li');
-        li.className = 'mb-4 p-4 bg-white rounded-lg shadow flex items-center justify-between';
-        li.innerHTML = `
-            <div class="flex-1">
-                <div class="flex items-center space-x-2">
-                    <span class="text-lg font-medium">${objectif.titre}</span>
-                    <span class="px-2 py-1 text-xs rounded-full ${getCategoryClass(objectif.categorie)}">
-                        ${objectif.categorie}
-                    </span>
-                </div>
-                <div class="mt-2">
-                    <input type="range" 
-                           min="0" 
-                           max="100" 
-                           value="${progres}" 
-                           class="w-full"
-                           onchange="mettreAJourProgres('${objectifId}', this.value)">
-                    <div class="flex justify-between text-sm text-gray-600">
-                        <span>0%</span>
-                        <span>${progres}%</span>
-                        <span>100%</span>
-                    </div>
-                </div>
+        const div = document.createElement('div');
+        div.className = 'mb-4 p-4 bg-white rounded-lg shadow flex items-center justify-between';
+        
+        // Déterminer l'état actuel et les styles
+        let etat = progres === 0 ? 'todo' : progres === 100 ? 'done' : 'inprogress';
+        let btnClass = '';
+        let btnIcon = '';
+        
+        switch(etat) {
+            case 'todo':
+                btnClass = 'bg-gray-200 hover:bg-gray-300 text-gray-600';
+                btnIcon = '⚪';
+                break;
+            case 'inprogress':
+                btnClass = 'bg-blue-200 hover:bg-blue-300 text-blue-600';
+                btnIcon = '🔵';
+                break;
+            case 'done':
+                btnClass = 'bg-green-200 hover:bg-green-300 text-green-600';
+                btnIcon = '✓';
+                break;
+        }
+
+        div.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <span class="text-lg font-medium">${objectif.titre}</span>
+                <span class="px-2 py-1 text-xs rounded-full ${getCategoryClass(objectif.categorie)}">
+                    ${objectif.categorie}
+                </span>
             </div>
+            <button onclick="cycleObjectifState('${objectifId}', '${etat}')" 
+                    class="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${btnClass}">
+                <span class="text-xl">${btnIcon}</span>
+            </button>
         `;
-        objectifsList.appendChild(li);
+        
+        objectifsList.appendChild(div);
     });
 
     // Mettre à jour le progrès du jour
     afficherProgresJour();
 }
 
-// Fonction pour obtenir la classe CSS en fonction de la catégorie
-function getCategoryClass(categorie) {
-    switch (categorie) {
-        case 'personnel':
-            return 'bg-blue-100 text-blue-800';
-        case 'professionnel':
-            return 'bg-green-100 text-green-800';
-        case 'sante':
-            return 'bg-red-100 text-red-800';
-        default:
-            return 'bg-gray-100 text-gray-800';
-    }
+// Fonction pour faire cycler l'état d'un objectif
+async function cycleObjectifState(objectifId, etatActuel) {
+    const etats = {
+        'todo': { progres: 50 },
+        'inprogress': { progres: 100 },
+        'done': { progres: 0 }
+    };
+    
+    const nouvelEtat = etats[etatActuel];
+    await mettreAJourProgres(objectifId, nouvelEtat.progres);
+    
+    // Recharger l'affichage après la mise à jour
+    await afficherObjectifs();
 }
 
 // Fonction pour mettre à jour la valeur du progrès en temps réel
@@ -468,98 +511,24 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Initialiser la date sélectionnée à aujourd'hui
-        const dateSelectionnee = new Date().toISOString().split('T')[0];
-        
-        // Charger la semaine actuelle
+        console.log('Chargement des données...');
         await chargerSemaineActuelle();
-        
-        // Initialiser les filtres et le calendrier
-        initFiltres();
-        initCalendar();
-        
-        // Mettre à jour l'affichage
-        afficherObjectifs();
-        updateProgressionChart();
-
-        // Gestionnaire pour le formulaire d'ajout d'objectif
-        const form = document.getElementById('objectif-form');
-        if (form) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                // Récupérer les valeurs du formulaire
-                const titre = document.getElementById('objectif').value;
-                const categorie = document.getElementById('categorie').value;
-                
-                // Créer un nouvel objectif
-                const nouvelObjectif = {
-                    id: 'obj_' + Date.now(),
-                    titre: titre,
-                    categorie: categorie,
-                    date_creation: new Date().toISOString()
-                };
-                
-                try {
-                    // Charger les objectifs existants
-                    const response = await fetch('http://localhost:8080/load?file=objectifs_master.json');
-                    const data = await response.json();
-                    
-                    // Ajouter le nouvel objectif
-                    data.objectifs = data.objectifs || [];
-                    data.objectifs.push(nouvelObjectif);
-                    
-                    // Sauvegarder les changements dans objectifs_master.json
-                    await fetch('http://localhost:8080/save', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            file: 'objectifs_master.json',
-                            data: data
-                        })
-                    });
-
-                    // Ajouter l'objectif à la semaine actuelle
-                    const responseSemaine = await fetch('http://localhost:8080/load?file=semaines.json');
-                    const dataSemaine = await responseSemaine.json();
-                    
-                    // Pour chaque jour de la semaine
-                    Object.keys(dataSemaine.progressionQuotidienne).forEach(date => {
-                        dataSemaine.progressionQuotidienne[date][nouvelObjectif.id] = 0;
-                    });
-
-                    // Sauvegarder les changements dans semaines.json
-                    await fetch('http://localhost:8080/save', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            file: 'semaines.json',
-                            data: dataSemaine
-                        })
-                    });
-
-                    // Recharger les données et mettre à jour l'affichage
-                    await chargerSemaineActuelle();
-                    afficherObjectifs();
-                    
-                    // Réinitialiser le formulaire
-                    form.reset();
-                    
-                    // Afficher un message de succès
-                    alert('Objectif ajouté avec succès !');
-                    
-                } catch (error) {
-                    console.error('Erreur lors de l\'ajout de l\'objectif:', error);
-                    alert('Une erreur est survenue lors de l\'ajout de l\'objectif');
-                }
-            });
-        }
-        
+        console.log('Données chargées avec succès');
     } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
     }
 });
+
+// Fonction pour obtenir la classe CSS en fonction de la catégorie
+function getCategoryClass(categorie) {
+    switch (categorie) {
+        case 'personnel':
+            return 'bg-blue-100 text-blue-800';
+        case 'professionnel':
+            return 'bg-green-100 text-green-800';
+        case 'sante':
+            return 'bg-red-100 text-red-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
+}

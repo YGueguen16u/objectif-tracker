@@ -230,6 +230,34 @@ body {
     border-color: #4f46e5;
 }
 
+/* Styles pour les boutons d'état */
+button {
+    transition: all 0.2s ease-in-out;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+/* Styles spécifiques pour les boutons d'état */
+button span.text-xl {
+    font-size: 1.5rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Suppression des anciens styles qui ne sont plus utilisés */
+.custom-checkbox,
+.checkbox-icon,
+.toggle-button,
+.toggle-circle {
+    display: none;
+}
+
 /* Styles du graphique */
 .chart-container {
     position: relative;
@@ -306,4 +334,75 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .category-badge.autre {
     background-color: #f3f4f6;
     color: #374151;
+}
+
+/* Style du bouton de progression */
+.progress-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f3f4f6;
+    border: 2px solid transparent;
+    gap: 0.5rem;
+    user-select: none;
+}
+
+.progress-button:hover {
+    background: #e5e7eb;
+}
+
+.progress-button .icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.progress-button.not-started {
+    color: #6b7280;
+}
+
+.progress-button.not-started .icon {
+    background: #6b7280;
+    color: white;
+}
+
+.progress-button.in-progress {
+    color: #7c3aed;
+    background: #ede9fe;
+}
+
+.progress-button.in-progress .icon {
+    background: #7c3aed;
+    color: white;
+}
+
+.progress-button.completed {
+    color: #059669;
+    background: #d1fae5;
+}
+
+.progress-button.completed .icon {
+    background: #059669;
+    color: white;
+}
+
+.progress-button:focus {
+    outline: none;
+    border-color: currentColor;
+}
+
+.progress-button:active {
+    transform: scale(0.98);
+}
+
+/* Hover effects */
+.hover\:bg-opacity-80:hover {
+    --tw-bg-opacity: 0.8;
 }
