@@ -239,89 +239,6 @@ async function afficherObjectifs() {
     afficherProgresJour();
 }
 
-// Variables pour le drag & drop
-let draggedItem = null;
-let placeholder = null;
-
-// Gestionnaire de début de glissement
-function handleDragStart(e) {
-    draggedItem = this;
-    this.classList.add('dragging');
-    
-    // Créer un placeholder
-    placeholder = document.createElement('div');
-    placeholder.className = 'mb-4 p-4 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg';
-    placeholder.style.height = `${this.offsetHeight}px`;
-    
-    // Effet de transparence pendant le drag
-    setTimeout(() => {
-        this.style.opacity = '0.5';
-    }, 0);
-}
-
-// Gestionnaire de fin de glissement
-function handleDragEnd(e) {
-    draggedItem = null;
-    this.classList.remove('dragging');
-    this.style.opacity = '1';
-    
-    // Supprimer le placeholder s'il existe
-    if (placeholder && placeholder.parentNode) {
-        placeholder.parentNode.removeChild(placeholder);
-    }
-    placeholder = null;
-    
-    // Sauvegarder le nouvel ordre
-    sauvegarderOrdreObjectifs();
-}
-
-// Gestionnaire pendant le survol
-function handleDragOver(e) {
-    e.preventDefault();
-    
-    if (!draggedItem || draggedItem === this) return;
-    
-    const objectifsList = document.getElementById('objectifs-list');
-    const children = Array.from(objectifsList.children);
-    const draggedIndex = children.indexOf(draggedItem);
-    const dropIndex = children.indexOf(this);
-    
-    if (dropIndex > draggedIndex) {
-        this.parentNode.insertBefore(draggedItem, this.nextSibling);
-    } else {
-        this.parentNode.insertBefore(draggedItem, this);
-    }
-}
-
-// Gestionnaire de dépôt
-function handleDrop(e) {
-    e.preventDefault();
-}
-
-// Fonction pour sauvegarder l'ordre des objectifs
-async function sauvegarderOrdreObjectifs() {
-    const objectifsList = document.getElementById('objectifs-list');
-    const objectifsOrdonnes = Array.from(objectifsList.children).map(div => {
-        return div.id.replace('objectif-', '');
-    });
-    
-    // Mettre à jour l'ordre dans semaines.json
-    const dateSelectionnee = new Date().toISOString().split('T')[0];
-    const nouveauProgres = {};
-    
-    objectifsOrdonnes.forEach(objectifId => {
-        nouveauProgres[objectifId] = semaineActuelle.progressionQuotidienne[dateSelectionnee][objectifId];
-    });
-    
-    semaineActuelle.progressionQuotidienne[dateSelectionnee] = nouveauProgres;
-    
-    try {
-        await sauvegarderDonnees('semaines.json', semaineActuelle);
-    } catch (error) {
-        console.error('Erreur lors de la sauvegarde de l\'ordre:', error);
-    }
-}
-
 // Fonction pour faire cycler l'état d'un objectif
 async function cycleObjectifState(objectifId, etatActuel) {
     const etats = {
@@ -609,6 +526,74 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Erreur lors de l\'initialisation:', error);
     }
 });
+
+// Variables pour le drag & drop
+let draggedItem = null;
+let dragStartY = 0;
+
+function handleDragStart(e) {
+    draggedItem = this;
+    dragStartY = e.clientY;
+    this.classList.add('dragging');
+    
+    // Effet de transparence pendant le drag
+    requestAnimationFrame(() => {
+        this.style.opacity = '0.7';
+    });
+}
+
+function handleDragEnd(e) {
+    if (draggedItem) {
+        draggedItem.classList.remove('dragging');
+        draggedItem.style.opacity = '1';
+        draggedItem = null;
+        
+        // Sauvegarder le nouvel ordre
+        sauvegarderOrdreObjectifs();
+    }
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    if (!draggedItem || draggedItem === this) return;
+    
+    const rect = this.getBoundingClientRect();
+    const middle = rect.top + rect.height / 2;
+    
+    if (e.clientY < middle && this.previousElementSibling !== draggedItem) {
+        this.parentNode.insertBefore(draggedItem, this);
+    } else if (e.clientY >= middle && this.nextElementSibling !== draggedItem) {
+        this.parentNode.insertBefore(draggedItem, this.nextElementSibling);
+    }
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+}
+
+// Fonction pour sauvegarder l'ordre des objectifs
+async function sauvegarderOrdreObjectifs() {
+    const objectifsList = document.getElementById('objectifs-list');
+    const objectifsOrdonnes = Array.from(objectifsList.children).map(div => {
+        return div.id.replace('objectif-', '');
+    });
+    
+    // Mettre à jour l'ordre dans semaines.json
+    const dateSelectionnee = new Date().toISOString().split('T')[0];
+    const nouveauProgres = {};
+    
+    objectifsOrdonnes.forEach(objectifId => {
+        nouveauProgres[objectifId] = semaineActuelle.progressionQuotidienne[dateSelectionnee][objectifId];
+    });
+    
+    semaineActuelle.progressionQuotidienne[dateSelectionnee] = nouveauProgres;
+    
+    try {
+        await sauvegarderDonnees('semaines.json', semaineActuelle);
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde de l\'ordre:', error);
+    }
+}
 
 // Fonction pour obtenir la classe CSS en fonction de la catégorie
 function getCategoryClass(categorie) {
